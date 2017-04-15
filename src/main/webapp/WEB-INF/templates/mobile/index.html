@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml"
+      xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>主页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+    <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    <script src="//cdn.bootcss.com/moment.js/2.14.1/moment.min.js"></script>
+    <script src="//cdn.bootcss.com/vue/2.2.4/vue.min.js"></script>
+    <script src="/resources/js/all.js"></script>
+    <style type="text/css">
+        #toTop img {
+            width: 40px;
+        }
+
+        #toTop {
+            position: fixed;
+            bottom: 100px;
+            right: 10px;
+            display: block;
+            z-index: 9999;
+        }
+
+        #toScroll img {
+            width: 40px;
+        }
+
+        #toScroll {
+            position: fixed;
+            bottom: 50px;
+            right: 10px;
+            display: block;
+            z-index: 9999;
+        }
+
+        #tab-content img {
+            width: 100%;
+        }
+
+        .tab {
+            width: 100%;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<a href="javascript:void(0)" onclick="toTop()" id="toTop">
+    <img src="/resources/images/top.jpg">
+</a>
+<a href="javascript:void(0)" id="toScroll">
+    <img src="/resources/images/top.jpg">
+</a>
+<header>
+    <h4 th:text="${session.user}" style="text-align: center"></h4>
+</header>
+<div class="container" id="app">
+    <div class="row">
+        <div class="col-sm-12">
+            <form>
+                <div class="form-group">
+                    <button type="button" class="btn btn-success btn-block" v-on:click="start()">Start</button>
+                </div>
+                <div class="form-group">
+                    <select class="form-control" id="tabs" v-model="show">
+                        <option v-bind:value="item.key" v-for="item in list">{{item.key}}</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-sm-12" id="tab-content">
+            <div v-bind:id="item.key" v-for="item in list" v-show="show==item.key">
+                <img v-bind:src="e.url" v-for="e in item.picList"/>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            list: [],
+            show: 'log'
+        },
+        methods: {
+            start: function () {
+                var _this = this;
+                $.post('/start',function (data) {
+                    if(data.success) {
+                        _this.list = data.list;
+                    } else {
+                        alert(data.error);
+                    }
+                },'JSON');
+            }
+        }
+    });
+
+    var cur = 0;
+    var scroll = false;
+    $('#toScroll').click(function (e) {
+        e.stopPropagation();
+        cur = $(window).scrollTop();
+        scroll = true;
+        scrollCore();
+        return false;
+    });
+
+    function scrollCore() {
+        cur += 200;
+        if (cur > $(document).height() || !scroll) {
+            scroll = false;
+            return;
+        }
+        $('html,body').animate({scrollTop: cur + 'px'}, 800);
+        setTimeout(scrollCore, 800);
+    }
+
+    $(document).click(function () {
+        scroll = false;
+    });
+
+</script>
+</body>
+</html>

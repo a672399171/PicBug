@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+    <link href="http://g.alicdn.com/sj/dpl/1.5.1/css/sui.min.css" rel="stylesheet">
+    <script type="text/javascript" src="http://g.alicdn.com/sj/lib/jquery/dist/jquery.min.js"></script>
+    <script type="text/javascript" src="http://g.alicdn.com/sj/dpl/1.5.1/js/sui.min.js"></script>
+    <script src="//cdn.bootcss.com/zclip/1.1.2/jquery.zclip.min.js"></script>
+    <script src="//cdn.bootcss.com/moment.js/2.14.1/moment.min.js"></script>
+    <script src="/resources/js/all.js"></script>
+    <style type="text/css">
+        #tab-content div {
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        #tab-content img {
+            width: 100%;
+        }
+
+        #text {
+            width: 100%;
+            font-size: large;
+        }
+
+        #toTop img {
+            width: 50px;
+        }
+
+        #toTop {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+        }
+    </style>
+</head>
+<body>
+<a href="#top" id="toTop">
+    <img src="/resources/images/top.jpg">
+</a>
+<h4 th:text="${session.user}"></h4>
+<textarea id="text" rows="20"></textarea>
+<hr>
+
+<input type="text" placeholder="key" id="key">
+<button id="startBtn" class="sui-btn btn-xlarge btn-danger">开始</button>
+<button onclick="updateConfig()" class="sui-btn btn-xlarge btn-danger">更新</button>
+<button onclick="formatJson()" class="sui-btn btn-xlarge btn-primary">格式化json</button>
+<button id="hideBtn" class="sui-btn btn-xlarge btn-warning">隐藏</button>
+<button onclick="clearText()" class="sui-btn btn-xlarge btn-warning">清空</button>
+<button onclick="copy(this)" class="sui-btn btn-xlarge btn-warning">复制内容</button>
+<a id="#top"></a>
+<hr>
+<div>
+    <ul class="sui-nav nav-tabs nav-xlarge" id="tabs">
+        <li>
+            <a href="#log" data-toggle='tab'>日&nbsp;&nbsp;志</a>
+        </li>
+    </ul>
+    <div class="tab-content" id="tab-content">
+        <div id="log" class='tab-pane'>
+            <p></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    var started = false;
+    var show = true;
+    $(function () {
+        $("#startBtn").click(function () {
+            if (!started) {
+                started = true;
+                $("#startBtn").attr("disabled", true);
+                var received = 0;
+                var xhr = createXhr();
+                xhr.open("POST", "/start", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.send("schoolNum=" + $('#schoolNum').val() + '&password=' + $('#password').val() + '&key=' + $('#key').val());
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 3) {
+                        var text = xhr.responseText.substring(received);
+                        received = xhr.responseText.length;
+                        handleData(JSON.parse(text));
+                    } else if (xhr.status == 200) {
+                        //
+                    }
+                }
+            }
+        });
+
+        $("#hideBtn").click(function () {
+            if (show) {
+                $('#text').hide();
+                show = false;
+                $("#hideBtn").text("显示");
+            } else {
+                $('#text').show();
+                show = true;
+                $("#hideBtn").text("隐藏");
+            }
+        });
+
+        // 初始化隐藏
+        $("#hideBtn").click();
+    });
+
+    // 处理数据
+    function handleData(data) {
+        appendLog(data);
+        if (data.success === false) {
+            alert(data.error);
+            $("#startBtn").removeAttr("disabled");
+            started = false;
+            return;
+        } else if (data.success === true) {
+            $("#startBtn").removeAttr("disabled");
+            started = false;
+            return;
+        }
+        var arr = $('#tabs li');
+        var li = undefined;
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].id === 'li' + data.area) {
+                li = arr[i];
+                break;
+            }
+        }
+
+        var content = undefined;
+        if (li !== undefined) {
+            content = $('#' + data.area);
+        } else {
+            $('#tabs').append("<li id='li" + data.area + "'><a href='#" + data.area + "' data-toggle='tab'>" + data.area + "</a></li>");
+            content = $("<div id='" + data.area + "' class='tab-pane'>");
+            $('#tab-content').append(content);
+        }
+        for (var i = 0; i < data.imgList.length; i++) {
+            content.append("<img src='" + data.imgList[i] + "'/>");
+        }
+    }
+</script>
+</body>
+</html>

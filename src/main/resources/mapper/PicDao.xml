@@ -1,0 +1,25 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zzuzl.dao.PicDao">
+
+    <insert id="batchInsert">
+        INSERT ignore INTO pic (url,`key`,updateTime) VALUES
+        <foreach collection="picList" separator="," item="item">
+            (#{item.url},#{item.key},now())
+        </foreach>
+        ;
+    </insert>
+
+    <select id="getTodayImg" resultType="Pic">
+        select url,`key` from pic where date(now())=updateTime and `key`=#{key}
+    </select>
+
+    <select id="getJson" resultType="string">
+        select json from json where `key`=#{key}
+    </select>
+
+    <select id="listJson" resultType="JsonVo">
+        select `key`,json from json
+    </select>
+</mapper>
