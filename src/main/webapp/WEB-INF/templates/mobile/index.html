@@ -12,7 +12,6 @@
     <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js" async></script>
     <script src="//cdn.bootcss.com/moment.js/2.14.1/moment.min.js" async></script>
     <script src="//cdn.bootcss.com/vue/2.2.4/vue.min.js"></script>
-    <script src="https://unpkg.com/vue-lazyload/vue-lazyload.js"></script>
     <script src="/resources/js/all.js" async></script>
     <style type="text/css">
         #toTop img {
@@ -63,7 +62,8 @@
                 </div>
                 <div class="form-group">
                     <select class="form-control" id="tabs" v-model="show">
-                        <option v-bind:value="item.key" v-for="item in list">{{item.key}}</option>
+                        <option value="qc">qc</option>
+                        <option value="sw">sw</option>
                     </select>
                 </div>
             </form>
@@ -72,17 +72,18 @@
     <hr>
     <div class="row">
         <div class="col-sm-12" id="tab-content">
-            <div v-bind:id="item.key" v-for="item in list" v-show="show==item.key">
-                <img alt="" v-bind:src="e.url" v-for="e in item.picList"/>
-            </div>
+            <img src="/resources/images/ajax.gif" data-echo="http://www.2017jpe.com/2017/04/16/319805160926311.jpg"/>
+            <div id="qc" v-show="show=='qc'"></div>
+            <div id="sw" v-show="show=='sw'"></div>
         </div>
     </div>
 </div>
 
+<script src="/resources/js/echo.min.js" type="application/javascript"></script>
 <script>
-    // 懒加载
-    Vue.use(VueLazyload, {
-        loading: '/resources/images/ajax.gif'
+    echo.init({
+        offset: 0,
+        throttle: 0
     });
     var vm = new Vue({
         el: '#app',
@@ -96,6 +97,11 @@
                 $.post('/start', function (data) {
                     if (data.success) {
                         _this.list = data.list;
+                        data.list.forEach(function (e) {
+                            e.picList.forEach(function (t) {
+                                $('#' + e.key).append("<img src='/resources/images/ajax.gif' data-echo='" + t.url + "'/>");
+                            });
+                        });
                     } else {
                         alert(data.error);
                     }
