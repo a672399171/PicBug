@@ -9,8 +9,7 @@
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
     <script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
-    <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js" async></script>
-    <script src="//cdn.bootcss.com/moment.js/2.14.1/moment.min.js" async></script>
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
     <script src="//cdn.bootcss.com/vue/2.2.4/vue.min.js"></script>
     <script src="/resources/js/all.js" async></script>
     <style type="text/css">
@@ -62,8 +61,7 @@
                 </div>
                 <div class="form-group">
                     <select class="form-control" id="tabs" v-model="show">
-                        <option value="qc">qc</option>
-                        <option value="sw">sw</option>
+                        <option v-bind:value="item.key" v-for="item in list">{{item.key}}</option>
                     </select>
                 </div>
             </form>
@@ -72,19 +70,14 @@
     <hr>
     <div class="row">
         <div class="col-sm-12" id="tab-content">
-            <img src="/resources/images/ajax.gif" data-echo="http://www.2017jpe.com/2017/04/16/319805160926311.jpg"/>
-            <div id="qc" v-show="show=='qc'"></div>
-            <div id="sw" v-show="show=='sw'"></div>
+            <div v-bind:id="item.key" v-for="item in list" v-show="show==item.key">
+                <img v-bind:src="e.url" v-for="e in item.picList"/>
+            </div>
         </div>
     </div>
 </div>
 
-<script src="/resources/js/echo.min.js" type="application/javascript"></script>
 <script>
-    echo.init({
-        offset: 0,
-        throttle: 0
-    });
     var vm = new Vue({
         el: '#app',
         data: {
@@ -94,18 +87,13 @@
         methods: {
             start: function () {
                 var _this = this;
-                $.post('/start', function (data) {
-                    if (data.success) {
+                $.post('/start',function (data) {
+                    if(data.success) {
                         _this.list = data.list;
-                        data.list.forEach(function (e) {
-                            e.picList.forEach(function (t) {
-                                $('#' + e.key).append("<img src='/resources/images/ajax.gif' data-echo='" + t.url + "'/>");
-                            });
-                        });
                     } else {
                         alert(data.error);
                     }
-                }, 'JSON');
+                },'JSON');
             }
         }
     });
